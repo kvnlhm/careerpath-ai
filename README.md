@@ -72,3 +72,4 @@ Deployment
 Aplikasi ini di-deploy secara terpisah untuk frontend dan backend:
 - Frontend: Vercel
 - Backend: Render
+
