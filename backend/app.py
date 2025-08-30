@@ -1,4 +1,5 @@
 import os
+import sys
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 import replicate
@@ -43,7 +44,9 @@ def get_recommendation():
         return jsonify({"result": result_text})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        # Mencetak error secara detail ke log Render
+        print(f"Error occurred: {e}", file=sys.stderr)
+        return jsonify({"error": "An internal server error occurred."}), 500
 
 if __name__ == '__main__':
     port = os.getenv("PORT", 5000)
