@@ -1,0 +1,14 @@
+@import "tailwindcss/preflight";
+@tailwind utilities;
+
+/* Custom placeholder styles */
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af !important;
+  opacity: 1;
+}
+
+input:focus::placeholder,
+textarea:focus::placeholder {
+  color: #d1d5db !important;
+}

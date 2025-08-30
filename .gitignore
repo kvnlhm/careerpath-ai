@@ -1,0 +1,5 @@
+# Ignored files for the entire project
+frontend/.env.local
+frontend/node_modules/
+backend/.env
+backend/__pycache__/
