@@ -1,53 +1,36 @@
 import os
 import sys
-from flask import Flask, request, jsonify
-from dotenv import load_dotenv
 import replicate
-from flask_cors import CORS
 
-# Muat variabel lingkungan dari file .env
-load_dotenv()
+# This code is a temporary debugger
+# It will only print the API call result to the logs.
 
-app = Flask(__name__)
-CORS(app)
+# This is the API token from your Render environment variables.
+api_token = os.getenv("REPLICATE_API_TOKEN")
 
-# Konfigurasi Replicate dengan token dari .env
-replicate.api_token = os.getenv("REPLICATE_API_TOKEN")
+if not api_token:
+    print("FATAL ERROR: REPLICATE_API_TOKEN is not set!", file=sys.stderr)
+    sys.exit(1)
 
-@app.route('/api/recommend', methods=['POST'])
-def get_recommendation():
-    try:
-        user_data = request.json
-        user_q1 = user_data.get('q1', '')
-        user_q2 = user_data.get('q2', '')
+# A sample prompt to test the API call
+test_prompt = "Hello, world! Say hello."
 
-        # Siapkan prompt untuk model Granite
-        prompt_text = (
-            f"Berdasarkan data berikut, berikan rekomendasi jurusan kuliah dan pekerjaan yang cocok untuk saya:\n\n"
-            f"Mata pelajaran favorit: {user_q1}\n"
-            f"Hobi dan kegiatan: {user_q2}\n\n"
-            f"Format jawaban harus ringkas dan jelas."
-        )
+try:
+    print("Attempting to call Replicate API...", file=sys.stderr)
+    
+    replicate.api_token = api_token
+    output = replicate.run(
+        "ibm-granite/granite-3.3-8b-instruct:3ff9e6e20ff1f31263bf4f36c242bd9be1acb2025122daeefe2b06e883df0996",
+        input={"prompt": test_prompt, "max_tokens": 100}
+    )
+    
+    result_text = "".join(output)
+    print("API call SUCCESSFUL. Output received:", file=sys.stderr)
+    print(result_text, file=sys.stderr)
 
-        # Panggil API Replicate (menggunakan library)
-        output = replicate.run(
-            "ibm-granite/granite-3.3-8b-instruct:3ff9e6e20ff1f31263bf4f36c242bd9be1acb2025122daeefe2b06e883df0996",
-            input={
-                "prompt": prompt_text,
-                "max_tokens": 1000
-            }
-        )
+except Exception as e:
+    print(f"API call FAILED. The error is: {e}", file=sys.stderr)
+    sys.exit(1)
 
-        # Kumpulkan hasil dari output API
-        result_text = "".join(output)
-
-        return jsonify({"result": result_text})
-
-    except Exception as e:
-        # Mencetak error secara detail ke log Render
-        print(f"Error occurred: {e}", file=sys.stderr)
-        return jsonify({"error": "An internal server error occurred."}), 500
-
-if __name__ == '__main__':
-    port = os.getenv("PORT", 5000)
-    app.run(host='0.0.0.0', port=port)
+# At this point, the code will exit, but the logs will tell us the result.
+# The app will not run, so you will see a crash in the logs, which is expected for this test.
