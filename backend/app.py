@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=[
-    "http://localhost:3000",
-    "http://127.0.0.1:3000", 
-    "https://careerpath-ai-chi.vercel.app",
-    "https://careerpath-ai-chi.vercel.app/",
-    "https://*.vercel.app"
-], supports_credentials=True)
+
+# Configure CORS with more specific settings
+CORS(app, 
+     origins=["*"],  # Allow all origins for now
+     methods=["GET", "POST", "OPTIONS"],
+     allow_headers=["Content-Type", "Authorization"],
+     supports_credentials=False)  # Set to False since we're using * origin
 
 # Konfigurasi Replicate dengan token dari .env
 replicate_token = os.getenv("REPLICATE_API_TOKEN")
@@ -31,8 +31,17 @@ if not replicate_token:
 replicate.api_token = replicate_token
 logger.info("Replicate API token configured successfully")
 
-@app.route('/api/recommend', methods=['POST'])
+@app.route('/api/recommend', methods=['POST', 'OPTIONS'])
 def get_recommendation():
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
+        return response
+    
+    # Handle actual POST request
     try:
         user_data = request.json
         user_q1 = user_data.get('q1', '')
