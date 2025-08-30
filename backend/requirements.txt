@@ -3,3 +3,4 @@ python-dotenv
 requests
 gunicorn
 replicate
+flask-cors
