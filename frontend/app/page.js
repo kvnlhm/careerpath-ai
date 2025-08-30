@@ -12,18 +12,31 @@ export default function HomePage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/recommend`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      console.log('API URL:', apiUrl);
+      
+      const response = await fetch(`${apiUrl}/api/recommend`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(answers),
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
       setRecommendations(data.result);
     } catch (error) {
       console.error('Error:', error);
-      setRecommendations('Terjadi kesalahan saat memproses data.');
+      setRecommendations(`Terjadi kesalahan: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
