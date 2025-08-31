@@ -1,111 +1,204 @@
-# CareerPath AI
+# CareerPath.AI - AI Career Guidance
 
-Aplikasi web bimbingan karier berbasis kecerdasan buatan (AI) yang dirancang untuk membantu pengguna menemukan jurusan dan jalur pekerjaan yang paling sesuai berdasarkan minat dan hobi mereka.
+Aplikasi web untuk memberikan rekomendasi jurusan kuliah dan karir berdasarkan kepribadian pengguna menggunakan AI model Replicate.
 
----
+## 🚀 Fitur
 
-## ✨ Fitur Utama
+- **AI-Powered Recommendations**: Menggunakan model AI Replicate untuk memberikan rekomendasi yang akurat
+- **User-Friendly Interface**: UI yang modern dan responsif
+- **Real-time Processing**: Analisis instan berdasarkan input pengguna
+- **Mobile Responsive**: Optimal untuk desktop dan mobile
 
--   **Kuesioner Interaktif:** Antarmuka pengguna yang bersih dan minimalis untuk mengumpulkan data tentang minat dan hobi pengguna.
--   **Rekomendasi Berbasis AI:** Menggunakan model bahasa besar (LLM) untuk menganalisis input pengguna dan menghasilkan rekomendasi jurusan dan pekerjaan yang personal.
--   **Respons Cepat dan Akurat:** API yang dioptimalkan untuk memberikan hasil rekomendasi dengan cepat.
+## 🛠️ Tech Stack
 
----
+- **Frontend**: Next.js 15, React 19
+- **Styling**: Tailwind CSS
+- **AI Model**: Replicate (IBM Granite 3.3 8B Instruct)
+- **Deployment**: Vercel
 
-## 📂 Struktur Proyek
+## 📋 Prerequisites
 
-Proyek ini memiliki arsitektur monorepo, di mana frontend dan backend berada dalam satu repositori untuk kemudahan pengelolaan.
-```bash
-/careerpath-ai
-├── /frontend/
-│   ├── ... (Kode Next.js)
-│   └── .env.local
-└── /backend/
-    ├── ... (Kode Python/Flask)
-    └── .env
+- Node.js 18+ 
+- npm atau yarn
+- Replicate API token
+
+## 🔧 Setup Lokal
+
+1. **Clone repository**
+   ```bash
+   git clone <your-repo-url>
+   cd careerpath-ai/frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Setup environment variables**
+   ```bash
+   cp env.example .env.local
+   ```
+   
+   Edit `.env.local` dan tambahkan Replicate API token:
+   ```env
+   REPLICATE_API_TOKEN=your_replicate_api_token_here
+   ```
+
+4. **Run development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open browser**
+   ```
+   http://localhost:3000
+   ```
+
+## 🚀 Deployment di Vercel
+
+### Metode 1: Deploy via Vercel Dashboard
+
+1. **Push code ke GitHub**
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
+
+2. **Deploy di Vercel**
+   - Buka [vercel.com](https://vercel.com)
+   - Login dengan GitHub
+   - Klik "New Project"
+   - Import repository GitHub Anda
+   - Set environment variables:
+     - `REPLICATE_API_TOKEN`: Token Replicate Anda
+   - Klik "Deploy"
+
+### Metode 2: Deploy via Vercel CLI
+
+1. **Install Vercel CLI**
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **Login ke Vercel**
+   ```bash
+   vercel login
+   ```
+
+3. **Deploy**
+   ```bash
+   vercel
+   ```
+
+4. **Set environment variables**
+   ```bash
+   vercel env add REPLICATE_API_TOKEN
+   ```
+
+## 🔑 Setup Replicate API
+
+1. **Daftar di Replicate**
+   - Buka [replicate.com](https://replicate.com)
+   - Buat akun baru
+   - Verifikasi email
+
+2. **Generate API Token**
+   - Buka [replicate.com/account/api-tokens](https://replicate.com/account/api-tokens)
+   - Klik "Create API token"
+   - Copy token yang dihasilkan
+
+3. **Tambahkan ke Environment Variables**
+   - Di Vercel: Project Settings → Environment Variables
+   - Tambahkan `REPLICATE_API_TOKEN` dengan value token Anda
+
+## 📁 Struktur Proyek
+
 ```
+frontend/
+├── app/
+│   ├── api/
+│   │   └── recommend/
+│   │       └── route.js          # API endpoint
+│   ├── globals.css               # Global styles
+│   ├── layout.js                 # Root layout
+│   └── page.js                   # Main page
+├── public/                       # Static assets
+├── package.json                  # Dependencies
+├── next.config.mjs              # Next.js config
+├── vercel.json                  # Vercel config
+└── env.example                  # Environment template
+```
+
+## 🔧 Konfigurasi
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `REPLICATE_API_TOKEN` | Token untuk akses Replicate API | ✅ |
+
+### Model Configuration
+
+Aplikasi menggunakan model IBM Granite 3.3 8B Instruct yang dioptimalkan untuk:
+- Analisis teks dalam bahasa Indonesia
+- Rekomendasi karir dan pendidikan
+- Response yang terstruktur dan informatif
+
+## 🐛 Troubleshooting
+
+### Error: "Replicate API token is not configured"
+- Pastikan `REPLICATE_API_TOKEN` sudah diset di environment variables
+- Restart development server setelah menambah environment variable
+
+### Error: "Authentication failed"
+- Periksa apakah API token valid
+- Pastikan akun Replicate sudah terverifikasi
+
+### Error: "Too many requests"
+- Replicate memiliki rate limit
+- Tunggu beberapa saat sebelum mencoba lagi
+
+### Build Error di Vercel
+- Pastikan semua dependencies terinstall
+- Periksa log build di Vercel dashboard
+
+## 📈 Monitoring
+
+### Vercel Analytics
+- Buka Vercel dashboard
+- Pilih project
+- Lihat tab "Analytics" untuk metrics
+
+### API Monitoring
+- Monitor API calls di Replicate dashboard
+- Periksa usage dan billing
+
+## 🔒 Security
+
+- API token disimpan sebagai environment variable
+- Tidak ada hardcoded credentials
+- Rate limiting diterapkan oleh Replicate
+
+## 📝 License
+
+MIT License - lihat file LICENSE untuk detail
+
+## 🤝 Contributing
+
+1. Fork repository
+2. Buat feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push ke branch (`git push origin feature/AmazingFeature`)
+5. Buat Pull Request
+
+## 📞 Support
+
+Jika ada pertanyaan atau masalah:
+- Buat issue di GitHub repository
+- Hubungi tim development
+
 ---
 
-## 🛠 Teknologi yang Digunakan
-
-### Frontend (`/frontend`)
-
--   **Next.js:** Framework React untuk membangun antarmuka pengguna yang modern dan cepat.
--   **CSS Inline:** Digunakan untuk styling.
--   **Tailwind CSS (opsional):** Meskipun kode saat ini menggunakan CSS inline, proyek ini kompatibel dengan integrasi Tailwind CSS untuk pengembangan di masa depan.
-
-### Backend (`/backend`)
-
--   **Python:** Bahasa pemrograman utama untuk logika server.
--   **Flask:** Framework web mikro untuk membangun API yang ringan.
--   **Replicate API:** Digunakan untuk mengakses dan menjalankan model AI IBM Granite 3.3-8B Instruct.
--   **Gunicorn:** Server web WSGI untuk menjalankan aplikasi Flask.
-
----
-
-## 🚀 Cara Menjalankan Aplikasi Secara Lokal
-
-Ikuti langkah-langkah di bawah ini untuk mengoperasikan aplikasi di komputer Anda.
-
-### Prasyarat
-
-Pastikan Anda telah menginstal:
-* **Python 3.x**
-* **Node.js dan npm**
-
-### Langkah-langkah
-
-1.  **Siapkan Lingkungan Backend**
-    -   Buka terminal dan masuk ke folder `backend`:
-        ```bash
-        cd backend
-        ```
-    -   Instal semua dependensi Python:
-        ```bash
-        pip install -r requirements.txt
-        ```
-    -   Buat file `.env` di dalam folder `backend` dan tambahkan kunci API Replicate Anda:
-        ```ini
-        REPLICATE_API_TOKEN=[KUNCI_API_REPLICATE_ANDA]
-        ```
-    -   Jalankan server backend:
-        ```bash
-        python app.py
-        ```
-    Server akan berjalan di `http://localhost:5000`.
-
-2.  **Siapkan Lingkungan Frontend**
-    -   Buka terminal baru dan masuk ke folder `frontend`:
-        ```bash
-        cd frontend
-        ```
-    -   Instal semua dependensi Node.js:
-        ```bash
-        npm install
-        ```
-    -   Buat file `.env.local` di dalam folder `frontend` dan tambahkan URL API backend:
-        ```ini
-        NEXT_PUBLIC_API_URL=http://localhost:5000
-        ```
-    -   Jalankan server frontend:
-        ```bash
-        npm run dev
-        ```
-
-3.  **Akses Aplikasi**
-    -   Buka peramban Anda dan kunjungi `http://localhost:3000`.
-
----
-
-## 🌍 Deployment
-
-Aplikasi ini di-deploy secara terpisah untuk frontend dan backend:
-* **Frontend:** Vercel
-* **Backend:** Render
-
----
-
-## Pengembang
-
--   **Nama:** Kevin Ilham
--   **GitHub:** https://github.com/kvnlhm
+**CareerPath.AI** - AI-powered career guidance for your future 🚀
