@@ -6,13 +6,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:api": "node test-local.js",
+    "test:simple": "node test-simple.js",
+    "verify:token": "node verify-token.js",
+    "setup:env": "node setup-env.js",
+    "update:token": "node update-token.js"
   },
   "dependencies": {
     "next": "15.5.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "replicate": "^1.1.0"
+    "replicate": "^1.1.0",
+    "node-fetch": "^3.3.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

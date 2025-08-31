@@ -13,11 +13,8 @@ export default function HomePage() {
     setRecommendations(null); // Clear previous recommendations
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      console.log('API URL:', apiUrl);
-      console.log('Sending data:', answers);
-      
-      const response = await fetch(`${apiUrl}/api/recommend`, {
+      // Ubah ini - gunakan relative URL untuk API route Next.js
+      const response = await fetch('/api/recommend', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -26,7 +23,6 @@ export default function HomePage() {
       });
       
       console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
       
       if (!response.ok) {
         const errorText = await response.text();
