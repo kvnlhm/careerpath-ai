@@ -6,30 +6,37 @@ from dotenv import load_dotenv
 import replicate
 from flask_cors import CORS
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
+# Setup logging with more detailed configuration
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
-# Muat variabel lingkungan dari file .env
+# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 
-# Configure CORS with more specific settings
+# Configure CORS with more specific settings for production
 CORS(app, 
      origins=["*"],  # Allow all origins for now
      methods=["GET", "POST", "OPTIONS"],
      allow_headers=["Content-Type", "Authorization"],
-     supports_credentials=False)  # Set to False since we're using * origin
+     supports_credentials=False)
 
-# Konfigurasi Replicate dengan token dari .env
+# Configure Replicate with token from environment
 replicate_token = os.getenv("REPLICATE_API_TOKEN")
 if not replicate_token:
     logger.error("REPLICATE_API_TOKEN not found in environment variables")
-    raise ValueError("REPLICATE_API_TOKEN is required")
+    # Don't raise error immediately, let the app start but log the issue
+    logger.warning("App will start but API calls will fail without REPLICATE_API_TOKEN")
 
-replicate.api_token = replicate_token
-logger.info("Replicate API token configured successfully")
+if replicate_token:
+    replicate.api_token = replicate_token
+    logger.info("Replicate API token configured successfully")
+else:
+    logger.warning("Replicate API token not configured - API calls will fail")
 
 @app.route('/api/recommend', methods=['POST', 'OPTIONS'])
 def get_recommendation():
@@ -41,15 +48,36 @@ def get_recommendation():
         response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
         return response
     
+    # Check if API token is configured
+    if not replicate_token:
+        logger.error("Replicate API token not configured")
+        return jsonify({
+            "error": "API token not configured. Please check environment variables."
+        }), 500
+    
     # Handle actual POST request
     try:
+        # Validate request data
+        if not request.is_json:
+            logger.error("Request is not JSON")
+            return jsonify({"error": "Request must be JSON"}), 400
+        
         user_data = request.json
+        if not user_data:
+            logger.error("Empty request body")
+            return jsonify({"error": "Request body cannot be empty"}), 400
+        
         user_q1 = user_data.get('q1', '')
         user_q2 = user_data.get('q2', '')
 
-        logger.info(f"Received request - q1: {user_q1}, q2: {user_q2}")
+        # Validate required fields
+        if not user_q1 or not user_q2:
+            logger.error("Missing required fields: q1 or q2")
+            return jsonify({"error": "Both q1 and q2 are required"}), 400
 
-        # Siapkan prompt untuk model Granite
+        logger.info(f"Received request - q1: {user_q1[:50]}..., q2: {user_q2[:50]}...")
+
+        # Prepare prompt for Granite model
         prompt_text = (
             f"Berdasarkan data berikut, berikan rekomendasi jurusan kuliah dan pekerjaan yang cocok untuk saya:\n\n"
             f"Mata pelajaran favorit: {user_q1}\n"
@@ -59,8 +87,7 @@ def get_recommendation():
 
         logger.info("Calling Replicate API...")
         
-        # Panggil API Replicate (menggunakan library)
-        # Try Granite model first, fallback to alternative if needed
+        # Call Replicate API with better error handling
         try:
             output = replicate.run(
                 "ibm-granite/granite-3.3-8b-instruct:3ff9e6e20ff1f31263bf4f36c242bd9be1acb2025122daeefe2b06e883df0996",
@@ -69,34 +96,49 @@ def get_recommendation():
                     "max_tokens": 1000
                 }
             )
+            logger.info("Granite model call successful")
         except Exception as granite_error:
             logger.warning(f"Granite model failed: {granite_error}")
             logger.info("Trying alternative model...")
             
-            # Fallback to alternative model
-            output = replicate.run(
-                "meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3",
-                input={
-                    "prompt": prompt_text,
-                    "max_tokens": 1000
-                }
-            )
+            try:
+                # Fallback to alternative model
+                output = replicate.run(
+                    "meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3",
+                    input={
+                        "prompt": prompt_text,
+                        "max_tokens": 1000
+                    }
+                )
+                logger.info("Alternative model call successful")
+            except Exception as alt_error:
+                logger.error(f"Alternative model also failed: {alt_error}")
+                raise Exception(f"Both models failed. Granite: {granite_error}, Alternative: {alt_error}")
 
-        # Kumpulkan hasil dari output API
+        # Collect result from API output
+        if not output:
+            logger.error("Empty response from Replicate API")
+            return jsonify({"error": "Empty response from AI model"}), 500
+        
         result_text = "".join(output)
-        logger.info("Replicate API call successful")
+        logger.info(f"Replicate API call successful, response length: {len(result_text)}")
 
         return jsonify({"result": result_text})
 
     except Exception as e:
-        # Log error secara detail
+        # Log error in detail
         logger.error(f"Error occurred: {str(e)}", exc_info=True)
         
         # Handle specific Replicate errors
-        if "403" in str(e):
+        error_str = str(e).lower()
+        if "403" in error_str or "forbidden" in error_str:
             error_message = "Authentication failed. Please check your Replicate API token."
-        elif "401" in str(e):
+        elif "401" in error_str or "unauthorized" in error_str:
             error_message = "Unauthorized. Please check your Replicate API token."
+        elif "quota" in error_str or "limit" in error_str:
+            error_message = "API quota exceeded. Please try again later."
+        elif "timeout" in error_str:
+            error_message = "Request timeout. Please try again."
         else:
             error_message = f"An error occurred: {str(e)}"
         
@@ -106,6 +148,12 @@ def get_recommendation():
 def test_token():
     """Test endpoint to verify Replicate API token"""
     try:
+        if not replicate_token:
+            return jsonify({
+                "status": "error",
+                "message": "REPLICATE_API_TOKEN not configured"
+            }), 400
+        
         # Test basic API call
         import requests
         
@@ -140,9 +188,14 @@ def test_token():
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint to verify the service is running"""
-    return jsonify({"status": "healthy", "message": "Service is running"})
+    return jsonify({
+        "status": "healthy", 
+        "message": "Service is running",
+        "token_configured": bool(replicate_token)
+    })
 
 if __name__ == '__main__':
-    port = os.getenv("PORT", 5000)
+    port = int(os.getenv("PORT", 5000))
     logger.info(f"Starting Flask app on port {port}")
-    app.run(host='0.0.0.0', port=port)
+    logger.info(f"Environment: {'production' if os.getenv('RENDER') else 'development'}")
+    app.run(host='0.0.0.0', port=port, debug=False)

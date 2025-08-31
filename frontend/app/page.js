@@ -10,10 +10,12 @@ export default function HomePage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setRecommendations(null); // Clear previous recommendations
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       console.log('API URL:', apiUrl);
+      console.log('Sending data:', answers);
       
       const response = await fetch(`${apiUrl}/api/recommend`, {
         method: 'POST',
@@ -23,11 +25,17 @@ export default function HomePage() {
         body: JSON.stringify(answers),
       });
       
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
       const data = await response.json();
+      console.log('Response data:', data);
       
       if (data.error) {
         throw new Error(data.error);
@@ -35,7 +43,7 @@ export default function HomePage() {
       
       setRecommendations(data.result);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error details:', error);
       setRecommendations(`Terjadi kesalahan: ${error.message}`);
     } finally {
       setIsLoading(false);

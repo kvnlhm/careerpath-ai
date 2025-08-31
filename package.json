@@ -1,0 +1,14 @@
+{
+  "name": "careerpath-ai-tests",
+  "version": "1.0.0",
+  "description": "Test scripts for CareerPath.AI API",
+  "main": "test-api.js",
+  "scripts": {
+    "test": "node test-api.js",
+    "test:local": "API_URL=http://localhost:5000 node test-api.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.0"
+  },
+  "type": "module"
+}
