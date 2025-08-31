@@ -26,7 +26,7 @@ CORS(app,
      supports_credentials=False)
 
 # Configure Replicate with token from environment
-replicate_token = os.getenv("REPLICATE_API_TOKEN")
+replicate_token = os.getenv("REPLICATE_API_TOKEN") or "r8_PjRsIVXS5VFs9DcOpa7Tyt0ZoMK5Jrx1NjkAl"
 if not replicate_token:
     logger.error("REPLICATE_API_TOKEN not found in environment variables")
     # Don't raise error immediately, let the app start but log the issue
