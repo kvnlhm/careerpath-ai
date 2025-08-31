@@ -11,7 +11,8 @@
     "test:simple": "node test-simple.js",
     "verify:token": "node verify-token.js",
     "setup:env": "node setup-env.js",
-    "update:token": "node update-token.js"
+    "update:token": "node update-token.js",
+    "deploy": "node deploy-vercel.js"
   },
   "dependencies": {
     "next": "15.5.2",
